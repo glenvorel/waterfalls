@@ -2,7 +2,9 @@
 
 PerformancePy records performance of running python scripts to find bottlenecks.
 
-When used in a single script which executes sequentially, it renders a simple waterfall diagram. The main use is, however, to measure execution times of scripts executed **in parallel** - whether in multiple **threats** or **processes**. The diagram rendered by PerformancePy helps to quickly inspect the execution times of individual blocks of code and find bottlenecks.
+![](images/chart_example.png)
+
+When used in a single script which executes sequentially, it renders a simple waterfall diagram. The main use is, however, to measure execution times of scripts executed **in parallel** - whether in multiple **threats** or **processes**. The diagram rendered by PerformancePy helps to quickly inspect the execution times of individual blocks of code to find bottlenecks.
 
 It is not meant to measure the performance of isolated code snippets down to microseconds - for that you can use [`timeit`](https://docs.python.org/3/library/timeit.html) module. PerformancePy works with somewhat more coarse values in the millisecond range. Pull requests are welcome.
 
@@ -35,6 +37,8 @@ We want to visualize parallel download of multiple images and their compression 
 import os
 import sys
 import multiprocessing
+from urllib.parse import urlparse
+
 from zipfile import ZipFile
 
 import requests
@@ -50,15 +54,18 @@ def download(url):
     # and time zone bias for GMT+8 is 480 minutes.
     pp_download = PerformancePy('download', '/path/to/records', 480)
 
-    # Start 'download image' task
-    pp_download.start('download image')
+    image_name = os.path.basename(urlparse(url).path)
+
+    # Start 'download image' task and specify its color
+    pp_download.start('download "{}"'.format(image_name), '#008080')
     image = requests.get(url)
     # The 'download image' task is done, dump its execution time
     pp_download.dump()
 
-    # Start 'save image' task
-    pp_download.start('save image')
-    open(url.split('/')[-1], 'wb').write(image.content)
+    # Start 'save image' task and specify its color
+    pp_download.start('save image', '#000000')
+    with open(image_name, 'wb') as image_file:
+        image_file.write(image.content)
     # The 'save image' task is done, dump its execution time
     pp_download.dump()
 
@@ -74,7 +81,7 @@ if __name__ == '__main__':
     ]
 
     processes = []
-    for i, url in enumerate(images):
+    for url in images:
         p = multiprocessing.Process(target=download, args=(url,))
         processes.append(p)
         p.start()
@@ -84,8 +91,8 @@ if __name__ == '__main__':
 
     # Zipping the downloaded images is another task group called 'zip'
     pp_zip = PerformancePy('zip', '/path/to/records', 480)
-    # Start 'zip' task and specify its color
-    pp_zip.start('create archive', '#ca562c')
+    # Start 'zip' task without specifying its color
+    pp_zip.start('create archive')
     with ZipFile('images.zip', 'w') as zip_archive:
         for file in os.listdir('.'):
             if not file.endswith('.jpg'):

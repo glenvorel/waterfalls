@@ -1,20 +1,17 @@
 #!/usr/bin/python3
 """
-Records performance of one or more simultaneously running python scripts.
+Records performance of running python scripts to find bottlenecks.
 
 Using of this module consists of two steps.
 
 Step 1
 ======
-It is imported and initiated in all scripts that are to be measured.
+It is imported and instantiated in all scripts that are to be measured.
 When the scripts are executed, PerformancePy automatically generates
 performance records in CSV format.
 
 Example:
-    import sys
     import time
-
-    sys.path.append('/path/to/performancepy')
     from performancepy import PerformancePy
 
     pp = PerformancePy('producer', '/path/to/records')
@@ -59,12 +56,14 @@ class PerformancePy:
         self.bias = bias * 60
 
         # Properties related to each task
-        self.start_time = None
-        self.task = None
-        self.color = None
+        self._start_time = None
+        self._task = None
+        self._color = None
 
     def _get_filepath(self, directory):
         directory_fullpath = os.path.realpath(directory)
+        if not os.path.exists(directory_fullpath):
+            os.makedirs(directory_fullpath)
         filename = '{}-{}.csv'.format(self.group, os.getpid())
         return os.path.join(directory_fullpath, filename)
 
@@ -78,33 +77,40 @@ class PerformancePy:
                 If not specified, PerformancePy will automatically assign it a color
                 when generating the chart.
         """
-        self.start_time = datetime.datetime.now(
+        if self._start_time is not None:
+            raise RuntimeError('PerformancePy is already running. Use .dump() to stop it first.')
+
+        self._start_time = datetime.datetime.now(
             tz=datetime.timezone(datetime.timedelta(seconds=self.bias)))
-        self.task = task
-        self.color = color
+        self._task = task
+        self._color = color
 
     def dump(self):
         """
         Ends a task and dumps its duration to the record file.
         """
+        if self._start_time is None:
+            raise RuntimeError('PerformancePy is not running. Use .start() to start it first.')
+
         end_time = datetime.datetime.now(
             tz=datetime.timezone(datetime.timedelta(seconds=self.bias)))
-        duration = end_time - self.start_time
+        duration = end_time - self._start_time
         duration = round(duration.total_seconds() * 1000)
         task_name = '[{}-p{}t{}] {}'.format(
             self.group,
             os.getpid(),
             threading.current_thread().getName(),
-            self.task)
+            self._task)
         row = '{},{},{},{} ms,{}\n'.format(
             task_name,
-            self.start_time.strftime('%Y-%m-%d %H:%M:%S.%f'),
+            self._start_time.strftime('%Y-%m-%d %H:%M:%S.%f'),
             end_time.strftime('%Y-%m-%d %H:%M:%S.%f'),
             duration,
-            self.color
+            self._color
             )
         with open(self.filepath, 'a') as df_file:
             df_file.write(row)
+        self._start_time = None
 
 
 if __name__ == '__main__':
