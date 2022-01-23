@@ -1,0 +1,40 @@
+[tool.poetry]
+name = "waterfalls"
+version = "0.1.0"
+description = "Visualizes duration and CPU usage of blocks of code to let you see bottlenecks in your applications."
+authors = ["Glen Vorel <glen.vorel@gmail.com>"]
+readme = "README.md"
+keywords = ["timing", "diagrams"]
+license = "MIT"
+
+[tool.poetry.dependencies]
+python = "^3.8"
+matplotlib = "^3.5.1"
+
+[tool.poetry.dev-dependencies]
+black = "^21.12b0"
+isort = "^5.10.1"
+mypy = "^0.931"
+
+[tool.poetry.scripts]
+waterfalls = "waterfalls.viewer:main"
+
+[build-system]
+requires = ["poetry-core>=1.0.0"]
+build-backend = "poetry.core.masonry.api"
+
+[tool.isort]
+py_version = 38
+profile = "black"
+line_length = 120
+lines_after_imports = 2
+force_sort_within_sections = true
+
+[tool.black]
+line-length = 120
+target-version = ["py38"]
+
+[tool.mypy]
+check_untyped_defs = true
+ignore_missing_imports = true
+warn_redundant_casts = true
