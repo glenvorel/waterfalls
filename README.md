@@ -1,3 +1,7 @@
+[![PyPI](https://img.shields.io/pypi/v/waterfalls?style=flat-square)](https://pypi.org/project/waterfalls/)
+[![PyPI - Python Version](https://img.shields.io/pypi/pyversions/waterfalls?style=flat-square)](https://pypi.org/project/waterfalls/)
+[![GitHub Workflow Status](https://img.shields.io/github/workflow/status/glenvorel/waterfalls/Lint%20and%20test?style=flat-square)](https://github.com/glenvorel/waterfalls/actions/workflows/lint_test.yml)
+
 # Waterfalls
 
 Visualizes duration and CPU usage of blocks of code to let you see bottlenecks in your applications.
