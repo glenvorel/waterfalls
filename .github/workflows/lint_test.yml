@@ -103,4 +103,4 @@ jobs:
         run: source .venv/bin/activate
 
       - name: Run unittest
-        run: python -m unittest discover -s tests
+        run: poetry run python -m unittest discover -s tests
