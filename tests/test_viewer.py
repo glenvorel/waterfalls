@@ -89,7 +89,7 @@ class TestViewer(unittest.TestCase):
         """
         Tests grouping of timing blocks into named timers.
         """
-        viewer_instance = Viewer(directory=".")
+        viewer_instance = Viewer()
         blocks = [
             {
                 "name": "Timer A",
@@ -150,7 +150,7 @@ class TestViewer(unittest.TestCase):
         """
         Tests formatting of timers' names depending on whether `show_thead_id` is enabled or disabled.
         """
-        viewer_instance = Viewer(directory=".")
+        viewer_instance = Viewer()
         timers = {
             "Timer A": [
                 {
@@ -265,7 +265,7 @@ class TestViewer(unittest.TestCase):
         When thread ID showing is enabled, then timers should be primarily sorted by their `thread_id`
         and then by `start_time`.
         """
-        viewer_instance = Viewer(directory=".")
+        viewer_instance = Viewer()
         formatted_timers = {
             "Timer B": [
                 {
@@ -384,7 +384,7 @@ class TestViewer(unittest.TestCase):
         """
         Tests automatic determination of time unit and a manual override.
         """
-        viewer_instance = Viewer(directory=".")
+        viewer_instance = Viewer()
         time_unit = viewer_instance._determine_time_unit(time_total=-1)
         self.assertEqual(time_unit.name, "nanoseconds")
 
@@ -474,7 +474,7 @@ class TestViewer(unittest.TestCase):
         """
         with patch("sys.argv", ["viewer.py"]):
             args = viewer._parse_arguments()
-            self.assertEqual(args.directory, ".")
+            self.assertEqual(args.directory, os.getcwd())
             self.assertIsNone(args.unit)
             self.assertFalse(args.thread_id)
             self.assertFalse(args.lines)

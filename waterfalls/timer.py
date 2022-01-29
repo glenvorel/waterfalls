@@ -32,7 +32,7 @@ from contextlib import ContextDecorator
 from json import dump
 from logging import getLogger
 from multiprocessing import current_process
-from os import environ, getpid
+from os import environ, getcwd, getpid
 from pathlib import Path
 from threading import get_native_id
 from time import perf_counter_ns, thread_time_ns
@@ -189,7 +189,7 @@ class Timer(ContextDecorator):
             return Path(cls.directory)
         if environ.get("WATERFALLS_DIRECTORY") is not None:
             return Path(environ["WATERFALLS_DIRECTORY"])
-        return Path(".")
+        return Path(getcwd())
 
     @staticmethod
     def _get_report_file_name(is_main_process: bool) -> str:
