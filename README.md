@@ -6,11 +6,11 @@
 
 Visualizes duration and CPU usage of blocks of code to let you see bottlenecks in your applications.
 
-To use Waterfalls, you mark the blocks of code in your application that you want to measure and then run the application as you normally do.
+To use Waterfalls, you mark the blocks of code in your application that you want to time and then run the application as you normally do.
 Waterfalls runs in the background and collects the data.
-When your application exits, Waterfalls automatically generates a report and saves it.
+When your application exits, Waterfalls automatically generates and saves a report.
 
-To see the report, you use the `waterfalls` command which shows the measurements as a waterfall diagram.
+To see the report, you use the `waterfalls` command which shows the timings as a waterfall diagram.
 It is much easier to understand the application flow when you _see_ it, rather than trying to decipher timestamps printed to the console.
 
 Waterfalls handles also applications that use threading and multiprocessing.
@@ -38,10 +38,10 @@ for i, url in enumerate(URLS):
 
     with Timer("Download site"):
         with urllib.request.urlopen(url) as conn:
-            html = conn.read().decode("utf-8")
+            html = conn.read()
 
     with Timer("Save as HTML"):
-        with open(f"{i}.html", "w") as file:
+        with open(f"{i}.html", "wb") as file:
             file.write(html)
 
     with Timer("Save as TAR"):
@@ -56,7 +56,7 @@ When we run the program, Waterfalls automatically saves a `waterfalls.json` file
 
 We can now type the `waterfalls` command which will display it as an interactive diagram.
 
-![](assets/diagram_download_sequential.png)
+![](https://raw.githubusercontent.com/glenvorel/waterfalls/main/assets/diagram_download_sequential.png)
 
 Looking at the diagram, we immediately _see_ that the program spends a lot of time downloading each site.
 During these periods, nothing else is happening, the CPU usage is very low and the program is generally wasting time.
@@ -77,7 +77,7 @@ pip install waterfalls
 
 Mark the sections of the code you want to measure.
 
-First, create one or more _timers_. A _timer_ typically represents one logical activity, for example, "Download site".
+First, create one or more _timers_. A _timer_ typically represents one logical activity, for example, `Download site`.
 The _timer_ corresponds to one row in the diagram. It gives the row its name.
 
 One _timer_ can have one or more _blocks_, for example, one for each site that is being downloaded.
@@ -87,15 +87,14 @@ All _blocks_ will be placed on the _timer_ row from left to right, showing exact
 ```python
 from waterfalls import Timer
 
-
 t = Timer("Download site")
 
 t.start()
-# Downloading site A
+# Download site A
 t.stop()
 
 t.start()
-# Downloading site B
+# Download site B
 t.stop()
 ```
 
@@ -103,13 +102,13 @@ For convenience, `Timer` can also be used as a context manager or as a decorator
 
 ```python
 with Timer("Download site"):
-    # Downloading site C
+    # Download site C
 ```
 
 ```python
 @Timer("Download site")
 def download_function():
-    # Downloading site D
+    # Download site D
 ```
 
 #### Add informative text to timing blocks
@@ -122,33 +121,33 @@ The _text_ can be defined when calling the `start()` method.
 ```python
 t = Timer("Download site")
 
-t.start(text="https://www.python.org/")
-# Download https://www.python.org/
+t.start(text="www.python.org")
+# Download www.python.org
 t.stop()
 
-t.start(text="https://pypi.org/")
-# Download "https://pypi.org/"
+t.start(text="pypi.org")
+# Download pypi.org
 t.stop()
 ```
 
 It can also be defined when using `Timer` as a context manager or decorator.
 
 ```python
-with Timer("Download site", text="https://www.python.org/"):
-    # Download https://www.python.org/
+with Timer("Download site", text="www.python.org"):
+    # Download www.python.org
 
-with Timer("Download site", text="https://pypi.org/"):
-    # Download https://pypi.org/
+with Timer("Download site", text="pypi.org"):
+    # Download pypi.org
 ```
 
 ```python
-@Timer("Download site", text="https://www.python.org/")
+@Timer("Download site", text="www.python.org")
 def download_function():
-    # Downloading https://www.python.org/
+    # Download www.python.org
 
-@Timer("Download site", text="https://pypi.org/")
+@Timer("Download site", text="pypi.org")
 def download_function():
-    # Downloading https://pypi.org/
+    # Download pypi.org
 ```
 
 Sometimes the _text_ isn't known at the moment of the _block's_ start. For example, it may be obtained during the _block's_ execution.
@@ -157,15 +156,17 @@ In this case, you can define it in the `stop()` method.
 ```python
 t = Timer("Download site")
 t.start()
-# Download https://github.com/
+# Download github.com
+# Save response size to `bytes_len`
 t.stop(text=bytes_len)
 ```
 
-When using `Timer` as a context manager, _text_ can be set in an instance attribute.
+When using `Timer` as a context manager, _text_ can also be set after initiation - using an instance attribute.
 
 ```python
 with Timer("Download site") as t:
-    # Download https://github.com/
+    # Download github.com
+    # Save response size to `bytes_len`
     t.text = bytes_len
 ```
 
@@ -174,7 +175,7 @@ with Timer("Download site") as t:
 #### Change the reports directory
 
 By default, the report file will be saved to the current working directory.
-To change the directory, you can set `Timer.directory` anywhere in the code.
+To choose a different directory, you can set `Timer.directory` anywhere in the code.
 
 ```python
 Timer.directory = "/path/to/reports/"
@@ -188,11 +189,11 @@ export WATERFALLS_DIRECTORY=/path/to/reports/
 
 ### Step 2/2: viewing diagrams
 
-To see the diagram, use the `waterfalls` command. By default, it will look for the report files in the current working directory.
+To see the diagram, use the `waterfalls` command. By default, it will look for report files in the current working directory.
 If you want to search in another location, you can specify the directory.
 
 ```bash
-waterfalls /path/to/reports/
+waterfalls "/path/to/reports/"
 ```
 
 The command supports the following arguments.
@@ -215,7 +216,7 @@ This type of program should benefit from using multiple threads so we will refac
 
 We will instruct Waterfalls to save the report file to the `./thread_pool_records/` directory.
 
-We will also pass the `Download site` _timer_ a _text_ containing the domain that is being downloaded so the diagram becomes even more clear.
+We will also pass the `Download site` _timer_ a _text_ containing the domain that is being downloaded so the diagram becomes even clearer.
 
 ```python
 import concurrent.futures
@@ -241,10 +242,10 @@ def save_site(i, url):
 
     with Timer("Download site", text=netloc):
         with urllib.request.urlopen(url) as conn:
-            html = conn.read().decode("utf-8")
+            html = conn.read()
 
     with Timer("Save as HTML"):
-        with open(f"{i}.html", "w") as file:
+        with open(f"{i}.html", "wb") as file:
             file.write(html)
 
     with Timer("Save as TAR"):
@@ -257,23 +258,23 @@ with concurrent.futures.ThreadPoolExecutor(max_workers=len(URLS)) as executor:
 ```
 
 After we run the program, there will be a new directory (`thread_pool_records`) in our current working directory.
-We can now launch the Waterfalls viewer. We will use the `--thread_id` flag to tell Waterfalls to show the thread ID belonging to each _timer_.
+We can now launch the Waterfalls viewer. We will also use the `--thread_id` flag to tell Waterfalls to show the thread ID belonging to each _timer_.
 
 ```bash
-waterfalls ./thread_pool_records/ --thread_id
+waterfalls "./thread_pool_records/" --thread_id
 ```
 
-![](assets/diagram_download_concurrent.png)
+![](https://raw.githubusercontent.com/glenvorel/waterfalls/main/assets/diagram_download_concurrent.png)
 
 Main observations:
 - We can _see_ that all sites are being downloaded concurrently, reducing the total time needed to run the program.
-- It takes around 350 ms to download, save and compress all 3 sites. (It is over 520 ms for the single-threaded version.)
+- It takes around 350 ms to download, save and compress all 3 sites. (It was over 520 ms for the single-threaded version.)
 - `pypi.org` is the quickest site to be downloaded, `github.com` is the slowest.
-- Creating the TAR files is very CPU-intensive. Multiprocessing would not help here since the TARs are created at different times and do not compete for the CPU.
+- Creating the TAR files is very CPU-intensive. However, multiprocessing would not help here since the TARs are created at different times and do not compete for the CPU.
 
 ### Multiple processes
 
-We have a crude program that determines if a number from a list is prime or not. We will add `waterfalls.Timer` called "Determine prime" to measure the program.
+We have a program that determines if a number from a list is prime or not. We will add `waterfalls.Timer` called `Determine prime` to time the program.
 
 ```python
 import math
@@ -300,18 +301,18 @@ for number in NUMBERS:
         t.text = f"{number}\nnot prime" if not_prime else f"{number}\nis prime"
 ```
 
-When the program finishes, we will launch the viewer.
+After the program finishes, we will launch the viewer.
 
 ```bash
-waterfalls ./prime_records/
+waterfalls "./prime_records/"
 ```
 
-![](assets/diagram_prime_sequential.png)
+![](https://raw.githubusercontent.com/glenvorel/waterfalls/main/assets/diagram_prime_sequential.png)
 
 We can immediately _see_ that determining whether a number is prime or not uses almost 100% CPU.
-But the computer has multiple CPU cores so we can take advantage of multiprocessing to (hopefully) speed up the program.
+But the computer has multiple CPU cores so we can take advantage of multiprocessing to speed up the program.
 We will use the [`ProcessPoolExecutor`](https://docs.python.org/3/library/concurrent.futures.html#processpoolexecutor).
-We will also change the reports directory to `./prime_records_multiprocessing/`.
+We will also change the reports directory to `./prime_multiprocessing_records/`.
 
 ```python
 import concurrent.futures
@@ -323,7 +324,7 @@ from waterfalls import Timer
 NUMBERS = [112272535095293, 112582705942171, 115280095190773, 115797848077099, 1099726899285419]
 
 
-Timer.directory = "./prime_records_multiprocessing/"
+Timer.directory = "./prime_multiprocessing_records/"
 
 
 def determine_prime(number):
@@ -339,23 +340,24 @@ def determine_prime(number):
         t.text = f"{number}\nnot prime" if not_prime else f"{number}\nis prime"
 
 
-with concurrent.futures.ProcessPoolExecutor(max_workers=2) as executor:
-    executor.map(determine_prime, NUMBERS)
+if __name__ == "__main__":
+    with concurrent.futures.ProcessPoolExecutor(max_workers=2) as executor:
+        executor.map(determine_prime, NUMBERS)
 ```
 
-When the program finishes, we can open the `./prime_records_multiprocessing/` directory where we will find 2 report files - one for each process.
-They are differentiated by their thread ID: `waterfalls.<thread_id>.json`. It doesn't change anything about using the viewer.
+After the program finishes, we can open the `./prime_multiprocessing_records/` directory where we will find 2 report files - one for each process.
+They are differentiated by their process ID: `waterfalls.<process_id>.json`.
+We use the viewer the same way we did before - the viewer automatically combines all record files in the directory into a unified view.
 
 ```bash
-waterfalls ./prime_records_multiprocessing/
+waterfalls "./prime_multiprocessing_records/"
 ```
 
-![](assets/diagram_prime_concurrent.png)
+![](https://raw.githubusercontent.com/glenvorel/waterfalls/main/assets/diagram_prime_concurrent.png)
 
-The viewer automatically combines all record files in the directory into a unified view.
 Main observations:
 - We can _see_ that the refactored program can analyze 2 numbers in parallel.
-- It takes around 4.7 s to finish the analysis. (It is over 11 s for the version using a single process.)
+- It takes around 4.7 s to finish the analysis. (It was over 11 s for the version using a single process.)
 
 ## License
 
