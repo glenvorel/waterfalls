@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "waterfalls"
-version = "0.2.0"
+version = "0.2.1"
 description = "Visualizes duration and CPU usage of blocks of code to let you see bottlenecks in your applications."
 authors = ["Glen Vorel <glen.vorel@gmail.com>"]
 readme = "README.md"
@@ -12,9 +12,9 @@ python = "^3.8"
 matplotlib = "^3.5.1"
 
 [tool.poetry.dev-dependencies]
-black = "^21.12b0"
+black = "^22.1.0"
 isort = "^5.10.1"
-mypy = "^0.931"
+mypy = "^0.941"
 
 [tool.poetry.scripts]
 waterfalls = "waterfalls.viewer:main"
